@@ -1,5 +1,6 @@
 from cliente import Cliente
 from ListaEncadeada import ListaEncadeada
+from produto import Produto
 
 def exibir_menu():
     print("\n===== MENU ESTOQUE =====")
@@ -22,6 +23,10 @@ def main():
     clientes = ListaEncadeada()
     proximo_id_cliente = 1
 
+    produtos = ListaEncadeada()
+    proximo_id_produto = 1
+    
+    
     while True:
         exibir_menu()
 
@@ -51,10 +56,29 @@ def main():
             clientes.listar()
 
         elif opcao == 3:
-            print("Cadastrar produto")
+            while True:
+
+             nome = input("Digite o nome do produto: ").strip()
+
+             if nome == "":
+                print("⚠️ Nome não pode ser vazio!")
+                continue           
+             try:
+                quantidade = int(input("Digite a quantidade do produto: "))
+                preco = float(input("Digite o preço do produto: "))     
+             except:
+                print("⚠️ Quantidade e preço devem ser números!")
+                continue
+             produto = Produto(proximo_id_produto, nome, quantidade, preco)
+             produtos.inserir(produto)
+             print("✅ Produto cadastrado com sucesso!")
+             print(produto)
+             proximo_id_produto += 1 
+            
 
         elif opcao == 4:
-            print("Listar produtos")
+            print("\n--- Lista de Produtos ---")
+            produtos.listar()
 
         elif opcao == 5:
             print("Pesquisar produto")
