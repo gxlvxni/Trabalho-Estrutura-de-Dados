@@ -4,7 +4,7 @@ from produto import Produto
 from venda import Venda
 from fila import Fila
 from pilha import Pilha
-
+from salvamento import *
 
 def exibir_menu():
     print("\n===== MENU ESTOQUE =====")
@@ -35,6 +35,9 @@ def main():
 
     pilha_operacoes = Pilha()
 
+    carregar_clientes(clientes)
+    carregar_produtos(produtos)
+
     while True:
         exibir_menu()
 
@@ -60,6 +63,7 @@ def main():
             print(cliente)
 
             proximo_id_cliente += 1
+            salvar_clientes(clientes)
 
         elif opcao == 2:
             print("\n--- Lista de Clientes ---")
@@ -96,6 +100,7 @@ def main():
             print(produto)
 
             proximo_id_produto += 1
+            salvar_produtos(produtos)
 
         elif opcao == 4:
             print("\n--- Lista de Produtos ---")
@@ -179,7 +184,8 @@ def main():
             print(venda)
 
             proximo_id_venda += 1
-
+            salvar_vendas(fila_vendas)
+            salvar_produtos(produtos)
             
 
 
@@ -192,7 +198,7 @@ def main():
             ultima = pilha_operacoes.pop()
 
             if not ultima:
-             print("⚠️ Nada para desfazer.")
+             print("Nada para desfazer.")
             else:
                 ultima.produto.quantidade += ultima.quantidade
                 print("✅ Última venda desfeita:")
