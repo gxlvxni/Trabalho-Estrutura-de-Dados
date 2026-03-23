@@ -23,20 +23,29 @@ def exibir_menu():
     print("========================")
 
 
+def ajustar_ids(lista):
+    if lista.inicio is None:
+        return 1
+
+    atual = lista.inicio
+    while atual.proximo:
+        atual = atual.proximo
+
+    return atual.dado.id + 1
+
+
 def main():
     clientes = ListaEncadeada()
-    proximo_id_cliente = 1
-
     produtos = ListaEncadeada()
-    proximo_id_produto = 1
-
     fila_vendas = Fila()
-    proximo_id_venda = 1
-
     pilha_operacoes = Pilha()
 
     carregar_clientes(clientes)
     carregar_produtos(produtos)
+
+    proximo_id_cliente = ajustar_ids(clientes)
+    proximo_id_produto = ajustar_ids(produtos)
+    proximo_id_venda = 1
 
     while True:
         exibir_menu()
@@ -53,13 +62,15 @@ def main():
             nome = input("Digite o nome do cliente: ").strip()
 
             if nome == "":
-                print("⚠️ Nome não pode ser vazio!")
+                print("Nome não pode ser vazio!")
                 continue
 
             cliente = Cliente(proximo_id_cliente, nome)
             clientes.inserir(cliente)
 
-            print("✅ Cliente cadastrado com sucesso!")
+            pilha_operacoes.push(("cliente", cliente))
+
+            print("Cliente cadastrado com sucesso!")
             print(cliente)
 
             proximo_id_cliente += 1
@@ -75,28 +86,30 @@ def main():
             nome = input("Digite o nome do produto: ").strip()
 
             if nome == "":
-                print("⚠️ Nome não pode ser vazio!")
+                print("Nome não pode ser vazio!")
                 continue
 
             try:
                 quantidade = int(input("Digite a quantidade do produto: "))
                 preco = float(input("Digite o preço do produto: "))
             except:
-                print("⚠️ Quantidade e preço devem ser números!")
+                print("Quantidade e preço devem ser números!")
                 continue
 
             if quantidade < 0:
-                print("⚠️ Quantidade não pode ser negativa!")
+                print("Quantidade não pode ser negativa!")
                 continue
 
             if preco <= 0:
-                print("⚠️ Preço deve ser maior que zero!")
+                print("Preço deve ser maior que zero!")
                 continue
 
             produto = Produto(proximo_id_produto, nome, quantidade, preco)
             produtos.inserir(produto)
 
-            print("✅ Produto cadastrado com sucesso!")
+            pilha_operacoes.push(("produto", produto))
+
+            print("Produto cadastrado com sucesso!")
             print(produto)
 
             proximo_id_produto += 1
@@ -104,12 +117,12 @@ def main():
 
         elif opcao == 4:
             print("\n--- Lista de Produtos ---")
-            produtos.listar()
-
             if produtos.inicio is None:
-                print("Nenhum produto cadastrado!")      
+                print("Nenhum produto cadastrado!")
+            else:
+                produtos.listar()
 
-
+        # ================= BUSCA =================
 
         elif opcao == 5:
             print("\n1 - Buscar por ID")
@@ -121,7 +134,7 @@ def main():
                 try:
                     id_busca = int(input("Digite o ID do produto: "))
                 except:
-                    print("⚠️ ID inválido!")
+                    print("ID inválido!")
                     continue
 
                 produto = produtos.buscar_por_id(id_busca)
@@ -129,13 +142,13 @@ def main():
                 if produto:
                     print(produto)
                 else:
-                    print("❌ Produto não encontrado.")
+                    print("Produto não encontrado.")
 
             elif escolha == "2":
                 nome_busca = input("Digite o nome do produto: ").strip()
 
                 if nome_busca == "":
-                    print("⚠️ Nome não pode ser vazio!")
+                    print("Nome não pode ser vazio!")
                     continue
 
                 produto = produtos.buscar_por_nome(nome_busca)
@@ -143,7 +156,12 @@ def main():
                 if produto:
                     print(produto)
                 else:
-                    print("❌ Produto não encontrado.")
+                    print("Produto não encontrado.")
+
+            else:
+                print("Opção inválida!")
+
+        # ================= VENDAS =================
 
         elif opcao == 6:
             try:
@@ -151,90 +169,105 @@ def main():
                 id_produto = int(input("Digite o ID do produto: "))
                 quantidade = int(input("Digite a quantidade: "))
             except:
-                print("⚠️ IDs e quantidade devem ser números!")
+                print("Dados inválidos!")
                 continue
 
             cliente = clientes.buscar_por_id(id_cliente)
             produto = produtos.buscar_por_id(id_produto)
 
             if not cliente:
-              print("⚠️ Cliente não encontrado!")
-              continue
+                print("Cliente não encontrado!")
+                continue
 
             if not produto:
-              print("⚠️ Produto não encontrado!")
-              continue
+                print("Produto não encontrado!")
+                continue
 
             if quantidade <= 0:
-              print("⚠️ Quantidade deve ser maior que zero!")
-              continue
+                print("Quantidade deve ser maior que zero!")
+                continue
 
             if quantidade > produto.quantidade:
-              print("⚠️ Quantidade insuficiente em estoque!")
-              continue
+                print("Estoque insuficiente!")
+                continue
 
             produto.quantidade -= quantidade
 
             venda = Venda(proximo_id_venda, cliente, produto, quantidade)
 
             fila_vendas.enqueue(venda)
-            pilha_operacoes.push(venda)
+            pilha_operacoes.push(("venda", venda))
 
-            print("✅ Venda realizada com sucesso!")
+            print("Venda realizada com sucesso!")
             print(venda)
 
             proximo_id_venda += 1
             salvar_vendas(fila_vendas)
             salvar_produtos(produtos)
-            
-
 
         elif opcao == 7:
             print("\n--- Fila de Vendas ---")
             fila_vendas.listar()
 
+        # ================= DESFAZER =================
 
         elif opcao == 8:
             ultima = pilha_operacoes.pop()
 
             if not ultima:
-             print("Nada para desfazer.")
+                print("Nenhuma operação para desfazer.")
+                continue
+
+            tipo, objeto = ultima
+
+            if tipo == "cliente":
+                print(f"Desfazendo cliente: {objeto.nome}")
+
+            elif tipo == "produto":
+                print(f"Desfazendo produto: {objeto.nome}")
+
+            elif tipo == "venda":
+                print(f"Desfazendo venda ID {objeto.id}")
+
+                objeto.produto.quantidade += objeto.quantidade
+
+                if fila_vendas.itens:
+                    fila_vendas.itens.pop()
+
+                salvar_produtos(produtos)
+                salvar_vendas(fila_vendas)
+
             else:
-                ultima.produto.quantidade += ultima.quantidade
-                print("✅ Última venda desfeita:")
-                print(ultima)
+                print("Tipo desconhecido!")
 
+        # ================= TOTAIS =================
 
-            
         elif opcao == 9:
             total = produtos.calcular_total_estoque()
-            print(f"\nValor total do estoque: R${total:.2f}")
-
+            print(f"\nTotal em estoque: R${total:.2f}")
 
         elif opcao == 10:
             total = fila_vendas.calcular_total_vendas()
-            print(f"\nValor total de vendas: R${total:.2f}")
-
+            print(f"\nTotal de vendas: R${total:.2f}")
 
         elif opcao == 11:
-            print("\n--- Clientes e Valores Gastos ---")
+            print("\n--- Clientes e Gastos ---")
 
             gastos = fila_vendas.calcular_gastos_por_cliente()
 
             if not gastos:
-                print("⚠️ Nenhuma venda realizada.")
+                print("Nenhuma venda registrada.")
                 continue
 
-            for cliente, total in gastos.items():
-                print(f"Cliente: {cliente} | Total gasto: R${total:.2f}")
-
+            for nome, total in gastos.items():
+                print(f"{nome} → R${total:.2f}")
 
         elif opcao == 12:
-            print("Saindo do sistema...")
+            print("Saindo...")
             break
 
         else:
-            print("⚠️ Opção inválida!")
+            print("Opção inválida!")
 
 
 if __name__ == "__main__":
