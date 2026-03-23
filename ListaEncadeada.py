@@ -39,3 +39,28 @@ class ListaEncadeada:
             atual = atual.proximo
 
         return None
+
+    def buscar_por_nome(self, nome):
+        atual = self.inicio
+
+        while atual:
+            if atual.dado.nome.lower() == nome.lower():
+                return atual.dado
+            atual = atual.proximo
+
+        return None
+
+
+    def calcular_total_estoque(self):
+        atual = self.inicio
+        total = 0
+
+        while atual:
+            produto = atual.dado
+            total += produto.quantidade * produto.preco
+            atual = atual.proximo
+
+        return total
+    
+
+    

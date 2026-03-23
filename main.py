@@ -102,22 +102,43 @@ def main():
             produtos.listar()
 
             if produtos.inicio is None:
-                print("⚠️ Nenhum produto cadastrado!")      
+                print("Nenhum produto cadastrado!")      
+
+
 
         elif opcao == 5:
-            try:
-                id_pesquisa = int(input("Digite o ID do produto para pesquisar: "))
-            except:
-                print("⚠️ ID deve ser um número!")
-                continue
+            print("\n1 - Buscar por ID")
+            print("2 - Buscar por nome")
 
-            produto_encontrado = produtos.buscar_por_id(id_pesquisa)
+            escolha = input("Escolha: ")
 
-            if produto_encontrado:
-                print("✅ Produto encontrado:")
-                print(produto_encontrado)
-            else:
-                print("⚠️ Produto não encontrado!")
+            if escolha == "1":
+                try:
+                    id_busca = int(input("Digite o ID do produto: "))
+                except:
+                    print("⚠️ ID inválido!")
+                    continue
+
+                produto = produtos.buscar_por_id(id_busca)
+
+                if produto:
+                    print(produto)
+                else:
+                    print("❌ Produto não encontrado.")
+
+            elif escolha == "2":
+                nome_busca = input("Digite o nome do produto: ").strip()
+
+                if nome_busca == "":
+                    print("⚠️ Nome não pode ser vazio!")
+                    continue
+
+                produto = produtos.buscar_por_nome(nome_busca)
+
+                if produto:
+                    print(produto)
+                else:
+                    print("❌ Produto não encontrado.")
 
         elif opcao == 6:
             try:
@@ -178,14 +199,15 @@ def main():
                 print(ultima)
 
 
-
             
-
         elif opcao == 9:
-            print("Total estoque")
+            total = produtos.calcular_total_estoque()
+            print(f"\nValor total do estoque: R${total:.2f}")
+
 
         elif opcao == 10:
-            print("Total vendas")
+            total = fila_vendas.calcular_total_vendas()
+            print(f"\nValor total de vendas: R${total:.2f}")
 
         elif opcao == 11:
             print("Clientes e gastos")
